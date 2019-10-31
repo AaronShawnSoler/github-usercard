@@ -3,6 +3,12 @@
            https://api.github.com/users/<your name>
 */
 
+const myGitHub = () => {
+  return new Promise((resolve, reject) => {
+    resolve()
+  })
+}
+
 /* Step 2: Inspect and study the data coming back, this is YOUR 
    github info! You will need to understand the structure of this 
    data in order to use it to build your component function 
@@ -13,6 +19,12 @@
 /* Step 4: Pass the data received from Github into your function, 
            create a new component and add it to the DOM as a child of .cards
 */
+
+axios.get('https://api.github.com/users/AaronShawnSoler')
+.then(function(res) {
+  const myGitHub = CreateCard(res.data);
+  document.querySelector('.cards').append(myGitHub);
+})
 
 /* Step 5: Now that you have your own card getting added to the DOM, either 
           follow this link in your browser https://api.github.com/users/<Your github name>/followers 
@@ -25,6 +37,27 @@
 */
 
 const followersArray = [];
+
+axios.get('https://api.github.com/users/AaronShawnSoler/followers')
+.then(function(res) {
+  const followers = res.data;
+  followers.forEach(element => {
+    followersArray.push(element);
+  })
+  return followersArray;
+})
+.then(function() {
+  console.log(followersArray);
+
+  followersArray.forEach(element => {
+    axios.get(`https://api.github.com/users/${element.login}`)
+    .then(function(res) {
+      console.log(res.data);
+      const userGitHub = CreateCard(res.data);
+      document.querySelector('.cards').append(userGitHub);
+    })
+  })
+})
 
 /* Step 3: Create a function that accepts a single object as its only argument,
           Using DOM methods and properties, create a component that will return the following DOM element:
@@ -53,3 +86,48 @@ const followersArray = [];
   luishrd
   bigknell
 */
+
+function CreateCard(property) {
+        //create elements
+  const card = document.createElement('div'),
+        userImg = document.createElement('img'),
+        cardInfo = document.createElement('div'),
+        name = document.createElement('h3'),
+        userName = document.createElement('p'),
+        location = document.createElement('p'),
+        profile = document.createElement('p'),
+        profileLink = document.createElement('a'),
+        followers = document.createElement('p'),
+        following = document.createElement('p'),
+        bio = document.createElement('p')
+
+        //add classes
+        card.classList.add('card');
+        cardInfo.classList.add('card-info');
+        name.classList.add('name');
+        userName.classList.add('username');
+
+        //update attributes
+        userImg.src = property.avatar_url;
+        profileLink.href = property.html_url;
+
+        //update text content
+        name.textContent = property.name;
+        userName.textContent = property.login;
+        location.textContent = `Location: ${property.location}`;
+        profile.textContent = `Profile: `;
+        profileLink.textContent = property.html_url;
+        followers.textContent = `Followers: ${property.followers}`;
+        following.textContent = `Following: ${property.following}`;
+        bio.textContent = `Bio: ${property.bio}`;
+
+        //append elements
+        card.append(userImg, cardInfo);
+        cardInfo.append(name, userName, location, profile, followers, following, bio);
+        profile.append(profileLink);
+
+        console.log(card);
+
+        //return root element
+        return card;
+}
